@@ -1,0 +1,13 @@
+
+{
+    "uid": "agent-001",
+    "server_url": "https://your-server.com:8443",
+    "tasks_folder": "./tasks",
+    "results_folder": "./results",
+    "log_file": "./agent.log",
+    "poll_interval": 5,
+    "max_poll_interval": 300,
+    "timeout": 30,
+    "max_retries": 3,
+    "retry_delay": 5
+}
