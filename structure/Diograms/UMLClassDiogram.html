@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-AGENT - Диаграмма классов</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+        }
+        .diagram-card {
+            background: #1e1e3a;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 30px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .diagram-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border-left: 5px solid #6c5ce7;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .diagram-description {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+        .mermaid {
+            background: #2a2a4a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 600px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: rgba(108,92,231,0.3);
+            border: 2px solid #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #6c5ce7;
+            transform: scale(1.02);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            button { display: none; }
+            .diagram-card { background: white; }
+            .diagram-title { color: #333; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 UML Диаграмма классов</h1>
+            <p>WEB-AGENT | Структура и связи компонентов</p>
+        </div>
+        
+        <div class="diagram-card">
+            <div class="diagram-title">Диаграмма классов агента</div>
+            <div class="diagram-description">
+                <strong>📌 Основные классы:</strong> Application (главный контроллер), Config (конфигурация), 
+                HttpClient (HTTP клиент), ApiClient (API клиент), TaskRunner (пул потоков), 
+                ProcessExecutor (выполнение процессов), CommandExecutor (выполнение команд),
+                FileManager (работа с файлами), Logger (логирование), StateMachine (конечный автомат),
+                SecurityManager (безопасность).
+            </div>
+            <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {
+    'background': '#2a2a4a',
+    'primaryColor': '#6c5ce7',
+    'primaryBorderColor': '#a29bfe',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#3a3a6a',
+    'tertiaryColor': '#2a2a4a',
+    'fontSize': '14px',
+    'fontFamily': 'monospace'
+}}}%%
+classDiagram
+    class Application {
+        +run() int
+        +stop() void
+        -onInitialize() bool
+        -onRegister() bool
+        -onPollTask() Task
+        -onExecuteTask() ExecutionResult
+        -onSendResult() bool
+        -shutdown() void
+    }
+    
+    class Config {
+        +loadFromFile() bool
+        +validate() bool
+        +getUid() string
+        +getServerUrl() string
+        +getPollInterval() int
+        +getTaskDirectory() path
+        +getResultDirectory() path
+        +getLogFile() path
+    }
+    
+    class HttpClient {
+        +post() HttpResponse
+        +get() HttpResponse
+        +put() HttpResponse
+        -sendWithRetry() HttpResponse
+        -configureSsl() void
+    }
+    
+    class ApiClient {
+        +registerAgent() bool
+        +fetchTask() Task
+        +sendResult() bool
+        +heartbeat() bool
+        -buildHeaders() map
+        -parseResponse() Response
+    }
+    
+    class ITaskExecutor {
+        &lt;&lt;interface&gt;&gt;
+        +execute() ExecutionResult
+        +cancel() void
+    }
+    
+    class ProcessExecutor {
+        +execute() ExecutionResult
+        +cancel() void
+        -runCommand() ProcessResult
+        -runExecutable() ProcessResult
+        -waitForProcess() int
+        -killProcess() bool
+    }
+    
+    class CommandExecutor {
+        +execute() ExecutionResult
+        +cancel() void
+        -validateCommand() bool
+        -executeShell() ProcessResult
+        -sanitizeCommand() string
+    }
+    
+    class TaskRunner {
+        +initialize() void
+        +submitTask() void
+        +waitForAll() void
+        +getActiveCount() int
+        +cancelTask() bool
+        -workerFunction() void
+    }
+    
+    class Task {
+        +string taskId
+        +string type
+        +json parameters
+        +int timeoutSec
+        +toJson() json
+    }
+    
+    class ExecutionResult {
+        +int exitCode
+        +string output
+        +string error
+        +bool success
+        +toJson() json
+    }
+    
+    class FileManager {
+        +createDirectory() bool
+        +readFile() string
+        +writeFile() bool
+        +exists() bool
+        +listFiles() vector
+        +moveFile() bool
+    }
+    
+    class StateMachine {
+        +transitionTo() bool
+        +getCurrentState() string
+        +canTransition() bool
+        +reset() void
+    }
+    
+    class Logger {
+        +info() void
+        +error() void
+        +debug() void
+        +warning() void
+        +setLevel() void
+    }
+    
+    class SecurityManager {
+        +validateCommand() bool
+        +validatePath() bool
+        +sanitizeInput() string
+        +checkWhitelist() bool
+    }
+    
+    Application --> Config : uses
+    Application --> ApiClient : uses
+    Application --> TaskRunner : uses
+    Application --> StateMachine : uses
+    Application --> Logger : uses
+    
+    ApiClient --> HttpClient : contains
+    TaskRunner --> ITaskExecutor : uses
+    TaskRunner --> Task : manages
+    TaskRunner --> ExecutionResult : returns
+    
+    ProcessExecutor ..|> ITaskExecutor : implements
+    CommandExecutor ..|> ITaskExecutor : implements
+    
+    ProcessExecutor --> FileManager : uses
+    CommandExecutor --> SecurityManager : uses
+    SecurityManager --> Config : reads
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>WEB-AGENT | UML Class Diagram | C++17 | Модульная архитектура</p>
+            <button onclick="window.print()">📄 Сохранить как PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                background: '#2a2a4a',
+                primaryColor: '#6c5ce7',
+                primaryBorderColor: '#a29bfe',
+                primaryTextColor: '#ffffff',
+                lineColor: '#a29bfe',
+                secondaryColor: '#3a3a6a',
+                tertiaryColor: '#2a2a4a',
+                fontSize: '14px',
+                fontFamily: 'monospace'
+            },
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>

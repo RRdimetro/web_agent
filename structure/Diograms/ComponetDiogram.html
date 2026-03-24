@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-AGENT - Диаграмма компонентов</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+        }
+        .diagram-card {
+            background: #1e1e3a;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 30px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .diagram-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border-left: 5px solid #6c5ce7;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .diagram-description {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+        .mermaid {
+            background: #2a2a4a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 600px;
+        }
+        .components-grid {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .comp-card {
+            background: rgba(108,92,231,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            border-left: 4px solid #6c5ce7;
+        }
+        .comp-card h4 {
+            color: #a29bfe;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .comp-card p {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: rgba(108,92,231,0.3);
+            border: 2px solid #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #6c5ce7;
+            transform: scale(1.02);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            button { display: none; }
+            .diagram-card { background: white; }
+            .comp-card { background: #f0f0f0; }
+            .comp-card h4 { color: #6c5ce7; }
+            .comp-card p { color: #333; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Диаграмма компонентов</h1>
+            <p>WEB-AGENT | Архитектура и взаимодействие модулей</p>
+        </div>
+        
+        <div class="diagram-card">
+            <div class="diagram-title">Диаграмма компонентов агента</div>
+            <div class="diagram-description">
+                <strong>📌 Описание архитектуры:</strong><br>
+                Агент состоит из нескольких независимых модулей, каждый из которых отвечает за свою функциональность.
+                <br><br>
+                <strong>🔷 Application Layer:</strong> Главный контроллер и конечный автомат, управляющие жизненным циклом.<br>
+                <strong>🔶 Core Services:</strong> Конфигурация, логирование, безопасность.<br>
+                <strong>🔷 Network Layer:</strong> HTTP клиент и API клиент для взаимодействия с сервером.<br>
+                <strong>🔶 Execution Layer:</strong> Пул потоков и исполнители задач (процессы и команды).<br>
+                <strong>🔷 File System:</strong> Работа с файлами и директориями.<br>
+                <strong>🔶 External Systems:</strong> Внешние системы: сервер, ОС, файловая система.
+                <br><br>
+                <strong>📡 Протокол взаимодействия:</strong> HTTPS с форматом данных JSON.
+            </div>
+            <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {
+    'background': '#2a2a4a',
+    'primaryColor': '#6c5ce7',
+    'primaryBorderColor': '#a29bfe',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#3a3a6a',
+    'tertiaryColor': '#2a2a4a'
+}}}%%
+graph TD
+    APP[Application]
+    SM[StateMachine]
+    
+    CFG[Config]
+    LOG[Logger]
+    SEC[SecurityManager]
+    
+    API[ApiClient]
+    HTTP[HttpClient]
+    
+    TR[TaskRunner]
+    PE[ProcessExecutor]
+    CE[CommandExecutor]
+    
+    FM[FileManager]
+    
+    SRV[Server]
+    OS[OperatingSystem]
+    FS[FileSystem]
+    
+    APP --> SM
+    APP --> CFG
+    APP --> API
+    APP --> TR
+    APP --> LOG
+    APP --> SEC
+    
+    SM --> API
+    SM --> TR
+    
+    CFG --> FM
+    CFG --> LOG
+    
+    API --> HTTP
+    HTTP --> SRV
+    
+    TR --> PE
+    TR --> CE
+    
+    PE --> FM
+    PE --> OS
+    
+    CE --> SEC
+    CE --> OS
+    
+    SEC --> CFG
+    
+    FM --> FS
+    LOG --> FS
+    
+    SRV -.->|HTTPS JSON| HTTP
+            </div>
+        </div>
+        
+        <div class="components-grid">
+            <div class="comp-card">
+                <h4>📱 Application Layer</h4>
+                <p><strong>Application</strong> - главный контроллер, управляет жизненным циклом, обрабатывает сигналы.<br>
+                <strong>StateMachine</strong> - конечный автомат, управляет состояниями агента.</p>
+            </div>
+            <div class="comp-card">
+                <h4>⚙️ Core Services</h4>
+                <p><strong>Config</strong> - загрузка и валидация JSON конфигурации.<br>
+                <strong>Logger</strong> - потокобезопасное логирование (spdlog).<br>
+                <strong>SecurityManager</strong> - валидация команд и путей, белый список.</p>
+            </div>
+            <div class="comp-card">
+                <h4>🌐 Network Layer</h4>
+                <p><strong>ApiClient</strong> - формирование запросов, парсинг ответов.<br>
+                <strong>HttpClient</strong> - выполнение HTTPS запросов с retry (CPR/libcurl).</p>
+            </div>
+            <div class="comp-card">
+                <h4>⚡ Execution Layer</h4>
+                <p><strong>TaskRunner</strong> - пул потоков, очередь задач.<br>
+                <strong>ProcessExecutor</strong> - запуск процессов (Boost.Process).<br>
+                <strong>CommandExecutor</strong> - выполнение системных команд.</p>
+            </div>
+            <div class="comp-card">
+                <h4>💾 File System Layer</h4>
+                <p><strong>FileManager</strong> - операции с файлами и директориями (std::filesystem).<br>
+                Создание, чтение, запись, перемещение, удаление.</p>
+            </div>
+            <div class="comp-card">
+                <h4>🖧 External Systems</h4>
+                <p><strong>Server</strong> - удаленный сервер управления.<br>
+                <strong>OperatingSystem</strong> - запуск процессов, выполнение команд.<br>
+                <strong>FileSystem</strong> - хранение файлов задач, результатов, логов.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>WEB-AGENT | Component Diagram | Модульная архитектура | C++17</p>
+            <button onclick="window.print()">📄 Сохранить как PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                background: '#2a2a4a',
+                primaryColor: '#6c5ce7',
+                primaryBorderColor: '#a29bfe',
+                primaryTextColor: '#ffffff',
+                lineColor: '#a29bfe',
+                secondaryColor: '#3a3a6a',
+                tertiaryColor: '#2a2a4a',
+                fontSize: '14px',
+                fontFamily: 'monospace'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>

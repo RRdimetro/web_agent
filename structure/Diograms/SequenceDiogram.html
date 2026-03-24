@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-AGENT - Диаграмма последовательности</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+        }
+        .diagram-card {
+            background: #1e1e3a;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 30px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .diagram-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border-left: 5px solid #6c5ce7;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .diagram-description {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+        .mermaid {
+            background: #2a2a4a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 800px;
+        }
+        .phases {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .phase-card {
+            background: rgba(108,92,231,0.2);
+            border-radius: 12px;
+            padding: 12px;
+            border-left: 3px solid #6c5ce7;
+        }
+        .phase-card h4 {
+            color: #a29bfe;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .phase-card p {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: rgba(108,92,231,0.3);
+            border: 2px solid #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #6c5ce7;
+            transform: scale(1.02);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            button { display: none; }
+            .diagram-card { background: white; }
+            .phase-card { background: #f0f0f0; }
+            .phase-card h4 { color: #6c5ce7; }
+        }
+        @media (max-width: 800px) {
+            .phases {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Диаграмма последовательности</h1>
+            <p>WEB-AGENT | Полный сценарий работы агента</p>
+        </div>
+        
+        <div class="diagram-card">
+            <div class="diagram-title">Диаграмма последовательности вызовов</div>
+            <div class="diagram-description">
+                <strong>📌 Сценарий работы агента:</strong><br>
+                <strong>1. Инициализация</strong> - загрузка конфигурации, создание директорий, инициализация логгера.<br>
+                <strong>2. Регистрация</strong> - отправка UID на сервер, получение sessionId с автоматическими повторными попытками.<br>
+                <strong>3. Основной цикл</strong> - периодический опрос сервера на наличие задач.<br>
+                <strong>4. Выполнение задачи</strong> - запуск процесса или команды в отдельном потоке.<br>
+                <strong>5. Отправка результата</strong> - передача кода возврата и вывода на сервер.<br>
+                <strong>6. Завершение</strong> - корректное завершение всех потоков и очистка ресурсов.
+            </div>
+            <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {
+    'background': '#2a2a4a',
+    'primaryColor': '#6c5ce7',
+    'primaryBorderColor': '#a29bfe',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#3a3a6a',
+    'tertiaryColor': '#2a2a4a',
+    'noteBkgColor': '#3a3a6a',
+    'noteTextColor': '#ffffff',
+    'actorBkg': '#6c5ce7',
+    'actorBorder': '#a29bfe',
+    'actorTextColor': '#ffffff'
+}}}%%
+sequenceDiagram
+    participant App as Application
+    participant Cfg as Config
+    participant Log as Logger
+    participant Api as ApiClient
+    participant Http as HttpClient
+    participant Srv as Server
+    participant TR as TaskRunner
+    participant Exec as ProcessExecutor
+    participant FM as FileManager
+    
+    Note over App,FM: ═══════════════════════════════════════════════════════════════
+    Note over App,FM: ФАЗА 1: ИНИЦИАЛИЗАЦИЯ
+    Note over App,FM: ═══════════════════════════════════════════════════════════════
+    
+    App->>Cfg: loadFromFile("config.json")
+    Cfg->>FM: readFile()
+    FM-->>Cfg: JSON content
+    Cfg->>Cfg: validate()
+    Cfg-->>App: config loaded
+    App->>Log: initialize()
+    Log-->>App: ready
+    App->>FM: createDirectories()
+    FM-->>App: success
+    
+    Note over App,Srv: ═══════════════════════════════════════════════════════════════
+    Note over App,Srv: ФАЗА 2: РЕГИСТРАЦИЯ
+    Note over App,Srv: ═══════════════════════════════════════════════════════════════
+    
+    loop Retry max 3 times
+        App->>Api: registerAgent()
+        Api->>Http: post("/api/v1/register", uid)
+        Http->>Srv: HTTPS POST
+        alt Success
+            Srv-->>Http: 200 OK sessionId
+            Http-->>Api: response
+            Api-->>App: sessionId
+            App->>Log: info Registered
+        else Error
+            Srv--xHttp: error
+            Http-->>Api: failed
+            Api-->>App: retry
+        end
+    end
+    
+    Note over App,Srv: ═══════════════════════════════════════════════════════════════
+    Note over App,Srv: ФАЗА 3: ОСНОВНОЙ ЦИКЛ ОПРОСА
+    Note over App,Srv: ═══════════════════════════════════════════════════════════════
+    
+    loop Every poll interval
+        App->>Api: fetchTask()
+        Api->>Http: get("/api/v1/task", uid, sessionId)
+        Http->>Srv: HTTPS GET
+        
+        alt No Task
+            Srv-->>Http: 204 No Content
+            Http-->>Api: empty
+            Api-->>App: null
+            App->>Log: debug No tasks
+        else Task Available
+            Srv-->>Http: 200 OK task
+            Http-->>Api: Task JSON
+            Api-->>App: Task object
+            App->>Log: info Task received
+            
+            Note over App,Exec: ══════════════════════════════════════════════════════
+            Note over App,Exec: ФАЗА 4: ВЫПОЛНЕНИЕ ЗАДАЧИ
+            Note over App,Exec: ══════════════════════════════════════════════════════
+            
+            App->>TR: submitTask(task)
+            activate TR
+            TR->>FM: createWorkingDir()
+            FM-->>TR: path
+            TR->>Exec: execute(params, workDir)
+            activate Exec
+            Exec->>Exec: createProcess
+            Exec->>Exec: waitForProcess
+            Exec->>FM: writeResult
+            Exec-->>TR: ExecutionResult
+            deactivate Exec
+            TR-->>App: result
+            deactivate TR
+            
+            Note over App,Srv: ══════════════════════════════════════════════════════
+            Note over App,Srv: ФАЗА 5: ОТПРАВКА РЕЗУЛЬТАТА
+            Note over App,Srv: ══════════════════════════════════════════════════════
+            
+            loop Retry max 3 times
+                App->>Api: sendResult(result)
+                Api->>Http: post("/api/v1/result", resultJson)
+                Http->>Srv: HTTPS POST
+                alt Success
+                    Srv-->>Http: 200 OK
+                    Http-->>Api: success
+                    Api-->>App: true
+                    App->>Log: info Result sent
+                    App->>FM: cleanup
+                else Error
+                    Srv--xHttp: error
+                    Http-->>Api: failed
+                    Api-->>App: false
+                end
+            end
+        end
+        
+        App->>App: sleep(poll_interval)
+    end
+    
+    Note over App,FM: ═══════════════════════════════════════════════════════════════
+    Note over App,FM: ФАЗА 6: ЗАВЕРШЕНИЕ
+    Note over App,FM: ═══════════════════════════════════════════════════════════════
+    
+    App->>TR: shutdown()
+    TR->>TR: join threads
+    App->>Log: info Agent stopped
+            </div>
+        </div>
+        
+        <div class="phases">
+            <div class="phase-card">
+                <h4>📌 Фаза 1: Инициализация</h4>
+                <p>Загрузка config.json, создание директорий, инициализация логгера. Время: ~100ms</p>
+            </div>
+            <div class="phase-card">
+                <h4>📌 Фаза 2: Регистрация</h4>
+                <p>POST /register с retry механизмом (3 попытки). Получение sessionId. Время: ~200-500ms</p>
+            </div>
+            <div class="phase-card">
+                <h4>📌 Фаза 3: Опрос задач</h4>
+                <p>GET /task каждые N секунд (по умолчанию 10 сек). При отсутствии задач - 204 No Content</p>
+            </div>
+            <div class="phase-card">
+                <h4>📌 Фаза 4: Выполнение</h4>
+                <p>Запуск процесса/команды в отдельном потоке с таймаутом. Время: зависит от задачи</p>
+            </div>
+            <div class="phase-card">
+                <h4>📌 Фаза 5: Отправка результата</h4>
+                <p>POST /result с retry. Передача exit code, stdout, stderr. Время: ~100-500ms</p>
+            </div>
+            <div class="phase-card">
+                <h4>📌 Фаза 6: Завершение</h4>
+                <p>Остановка потоков, очистка ресурсов, корректный exit. Время: ~50-200ms</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>WEB-AGENT | Sequence Diagram | 6 этапов работы | C++17 | Асинхронное выполнение</p>
+            <button onclick="window.print()">📄 Сохранить как PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                background: '#2a2a4a',
+                primaryColor: '#6c5ce7',
+                primaryBorderColor: '#a29bfe',
+                primaryTextColor: '#ffffff',
+                lineColor: '#a29bfe',
+                secondaryColor: '#3a3a6a',
+                tertiaryColor: '#2a2a4a',
+                noteBkgColor: '#3a3a6a',
+                noteTextColor: '#ffffff',
+                actorBkg: '#6c5ce7',
+                actorBorder: '#a29bfe',
+                actorTextColor: '#ffffff',
+                fontSize: '13px'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 70,
+                width: 140,
+                height: 60,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: false,
+                useMaxWidth: true,
+                showSequenceNumbers: false
+            },
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>
