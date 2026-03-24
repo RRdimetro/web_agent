@@ -21,7 +21,7 @@ void signalHandler(int signum) {
 
 int main(int argc, char* argv[]) {
     std::string config_path = "config/agent.conf";
-    
+
     // Разбор аргументов командной строки
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
@@ -36,43 +36,43 @@ int main(int argc, char* argv[]) {
             return 0;
         }
     }
-    
+
     // Настройка журналирования
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::info);
-    
+
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("agent.log", true);
     file_sink->set_level(spdlog::level::debug);
-    
+
     std::vector<spdlog::sink_ptr> sinks{console_sink, file_sink};
     auto logger = std::make_shared<spdlog::logger>("web-agent", sinks.begin(), sinks.end());
     spdlog::register_logger(logger);
     spdlog::set_default_logger(logger);
     spdlog::set_level(spdlog::level::debug);
-    
+
     spdlog::info("WebAgent запускается...");
-    
+
     try {
         Config config = Config::load(config_path);
         spdlog::info("Конфигурация загружена: UID={}, Сервер={}", config.uid, config.server_url);
-        
+
         g_agent = std::make_unique<WebAgent>(config);
-        
+
         // Установка обработчиков сигналов
         signal(SIGINT, signalHandler);
         signal(SIGTERM, signalHandler);
-        
+
         g_agent->start();
-        
+
         while (g_agent->isRunning()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        
+
     } catch (const std::exception& e) {
         spdlog::critical("Критическая ошибка: {}", e.what());
         return 1;
     }
-    
+
     spdlog::info("WebAgent завершен");
     return 0;
 }

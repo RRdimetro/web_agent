@@ -1,5 +1,6 @@
 
 #include "Logger.h"
+#include "TaskExecutor.h"
 #include <fstream>
 #include <iomanip>
 #include <chrono>
@@ -15,7 +16,7 @@ void Logger::logTask(const Task& task, const ExecutionResult& result) {
     message += "Успех: " + std::string(result.success ? "да" : "нет");
     message += ", Код возврата: " + std::to_string(result.exit_code);
     message += ", Выходные файлы: " + std::to_string(result.output_files.size());
-    
+
     write("ИНФО", message);
 }
 
@@ -33,12 +34,12 @@ void Logger::logWarning(const std::string& message) {
 
 void Logger::write(const std::string& level, const std::string& message) {
     std::lock_guard<std::mutex> lock(mutex_);
-    
+
     std::ofstream file(log_file_, std::ios::app);
     if (file.is_open()) {
         file << "[" << getTimestamp() << "] [" << level << "] " << message << std::endl;
     }
-    
+
     if (level == "ОШИБКА") {
         spdlog::error(message);
     } else if (level == "ПРЕДУПРЕЖДЕНИЕ") {
@@ -52,10 +53,10 @@ std::string Logger::getTimestamp() {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-    
+
     std::stringstream ss;
     ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
     ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-    
+
     return ss.str();
 }

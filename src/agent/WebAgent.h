@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "HttpClient.h"
 #include "Task.h"
+#include "TaskExecutor.h"
 #include "Logger.h"
 #include <atomic>
 #include <thread>

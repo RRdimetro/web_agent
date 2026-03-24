@@ -3,6 +3,7 @@ project(WebAgent VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BUILD_TESTS "Сборка тестов" OFF)
 
@@ -32,20 +33,28 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-
 set(SOURCES
     src/main.cpp
-    src/Config.cpp
-    src/HttpClient.cpp
-    src/WebAgent.cpp
-    src/Task.cpp
-    src/TaskExecutor.cpp
-    src/Logger.cpp
+    src/config/Config.cpp
+    src/http/HttpClient.cpp
+    src/agent/WebAgent.cpp
+    src/task/Task.cpp
+    src/task/TaskExecutor.cpp
+    src/utils/Logger.cpp
 )
 
 add_executable(web-agent ${SOURCES})
-target_link_libraries(web-agent 
+
+target_include_directories(web-agent PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/config
+    ${CMAKE_SOURCE_DIR}/src/http
+    ${CMAKE_SOURCE_DIR}/src/agent
+    ${CMAKE_SOURCE_DIR}/src/task
+    ${CMAKE_SOURCE_DIR}/src/utils
+)
+
+target_link_libraries(web-agent
     cpr::cpr
     nlohmann_json::nlohmann_json
     spdlog::spdlog
