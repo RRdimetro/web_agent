@@ -1,4 +1,3 @@
-
 #include "Logger.h"
 #include "TaskExecutor.h"
 #include <fstream>

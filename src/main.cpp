@@ -1,4 +1,3 @@
-
 #include "Config.h"
 #include "WebAgent.h"
 #include <spdlog/spdlog.h>
@@ -20,15 +19,14 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char* argv[]) {
-    std::string config_path = "config/agent.conf";
+    std::string config_path = "config/agent_config.json";
 
-    // Разбор аргументов командной строки
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-c" && i + 1 < argc) {
             config_path = argv[++i];
         } else if (arg == "-h" || arg == "--help") {
-            std::cout << "WebAgent - Агент для выполнения распределенных заданий\n"
+            std::cout << "WebAgent - Агент для выполнения распределённых заданий\n"
                       << "Использование: " << argv[0] << " [-c файл_конфига]\n"
                       << "Параметры:\n"
                       << "  -c <файл>  Путь к файлу конфигурации\n"
@@ -37,7 +35,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Настройка журналирования
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::info);
 
@@ -58,7 +55,6 @@ int main(int argc, char* argv[]) {
 
         g_agent = std::make_unique<WebAgent>(config);
 
-        // Установка обработчиков сигналов
         signal(SIGINT, signalHandler);
         signal(SIGTERM, signalHandler);
 
