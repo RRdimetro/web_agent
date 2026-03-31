@@ -7,6 +7,7 @@
 #include <atomic>
 #include <thread>
 #include <optional>
+#include <memory>
 
 class WebAgent {
 public:
@@ -21,6 +22,8 @@ private:
     Config config_;
     HttpClient http_client_;
     std::unique_ptr<Logger> logger_;
+    std::shared_ptr<Config> executor_config_;
+    std::unique_ptr<TaskExecutor> task_executor_;
 
     std::atomic<bool> running_{false};
     std::thread worker_thread_;

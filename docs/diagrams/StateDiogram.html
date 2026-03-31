@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-AGENT - Диаграмма состояний</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+        }
+        .diagram-card {
+            background: #1e1e3a;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 30px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .diagram-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border-left: 5px solid #6c5ce7;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .diagram-description {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+        .mermaid {
+            background: #2a2a4a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 600px;
+        }
+        .state-table {
+            margin-top: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .state-table h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        .state-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .state-table th, .state-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.9);
+        }
+        .state-table th {
+            background: #6c5ce7;
+            color: white;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: rgba(108,92,231,0.3);
+            border: 2px solid #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #6c5ce7;
+            transform: scale(1.02);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            button { display: none; }
+            .diagram-card { background: white; }
+            .state-table td { color: #333; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Диаграмма состояний</h1>
+            <p>WEB-AGENT | Конечный автомат агента</p>
+        </div>
+        
+        <div class="diagram-card">
+            <div class="diagram-title">Диаграмма состояний агента</div>
+            <div class="diagram-description">
+                <strong>📌 Состояния агента:</strong> UNINITIALIZED → INITIALIZING → REGISTERING → IDLE → 
+                FETCHING_TASK → EXECUTING → SENDING_RESULT → IDLE (цикл). При ошибках переход в ERROR 
+                с возможностью восстановления. При сигнале завершения (SIGTERM) - переход в SHUTDOWN.
+                <br><br>
+                <strong>🎯 Ключевые переходы:</strong> успешная регистрация → IDLE, получение задачи → EXECUTING,
+                выполнение завершено → SENDING_RESULT, результат отправлен → IDLE.
+            </div>
+            <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {
+    'background': '#2a2a4a',
+    'primaryColor': '#6c5ce7',
+    'primaryBorderColor': '#a29bfe',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#3a3a6a',
+    'tertiaryColor': '#2a2a4a'
+}}}%%
+stateDiagram-v2
+    [*] --> STOPPED
+
+    STOPPED --> STARTING : start called
+
+    STARTING --> REGISTERING : config loaded
+    STARTING --> STOPPED : start failed
+
+    REGISTERING --> IDLE : registration success
+    REGISTERING --> RETRYING : registration failed
+
+    IDLE --> FETCHING_TASK : poll_interval expired
+
+    FETCHING_TASK --> EXECUTING : task received
+    FETCHING_TASK --> IDLE : no task
+    FETCHING_TASK --> RETRYING : network error
+
+    EXECUTING --> SENDING_RESULT : task complete
+    EXECUTING --> IDLE : execution failed
+
+    SENDING_RESULT --> IDLE : result sent
+    SENDING_RESULT --> RETRYING : send failed
+
+    RETRYING --> IDLE : retry success
+    RETRYING --> IDLE : exponential backoff
+
+    IDLE --> STOPPED : stop called
+    EXECUTING --> STOPPED : force stop
+    SENDING_RESULT --> STOPPED : force stop
+    FETCHING_TASK --> STOPPED : force stop
+
+    STOPPED --> [*] : shutdown complete
+            </div>
+        </div>
+        
+        <div class="state-table">
+            <h3>📋 Описание состояний</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Состояние</th>
+                        <th>Описание</th>
+                        <th>Действия при входе</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>STOPPED</td><td>Агент остановлен</td><td>-</td></tr>
+                    <tr><td>STARTING</td><td>Запуск агента</td><td>Загрузка config/agent_config.json, создание Logger</td></tr>
+                    <tr><td>REGISTERING</td><td>Регистрация на сервере</td><td>POST /wa_reg/, получение access_code</td></tr>
+                    <tr><td>IDLE</td><td>Ожидание задачи</td><td>Ожидание poll_interval секунд</td></tr>
+                    <tr><td>FETCHING_TASK</td><td>Получение задачи</td><td>POST /wa_task/, проверка code_responce</td></tr>
+                    <tr><td>EXECUTING</td><td>Выполнение задачи</td><td>TaskExecutor::executeWithConfig() для FILE/TASK/CONF/TIMEOUT</td></tr>
+                    <tr><td>SENDING_RESULT</td><td>Отправка результата</td><td>POST /wa_result/ multipart/form-data</td></tr>
+                    <tr><td>RETRYING</td><td>Повторная попытка</td><td>Экспоненциальная задержка, retry</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>WEB-AGENT | State Diagram | 8 состояний | Конечный автомат | C++17</p>
+            <button onclick="window.print()">📄 Сохранить как PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                background: '#2a2a4a',
+                primaryColor: '#6c5ce7',
+                primaryBorderColor: '#a29bfe',
+                primaryTextColor: '#ffffff',
+                lineColor: '#a29bfe',
+                secondaryColor: '#3a3a6a',
+                tertiaryColor: '#2a2a4a',
+                fontSize: '14px'
+            },
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>

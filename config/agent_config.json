@@ -1,13 +1,14 @@
-
 {
-    "uid": "agent-001",
+    "uid": "00767",
+    "descr": "web-agent",
     "server_url": "https://xdev.arkcom.ru:9999/app/webagent1/api",
     "tasks_folder": "./tasks",
     "results_folder": "./results",
     "log_file": "./agent.log",
     "poll_interval": 5,
     "max_poll_interval": 300,
-    "timeout": 30,
+    "timeout": 60,
     "max_retries": 3,
-    "retry_delay": 5
+    "retry_delay": 5,
+    "access_code": "8b4567-99bb-257a-d32d-072aa651"
 }

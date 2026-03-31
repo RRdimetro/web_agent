@@ -10,7 +10,7 @@ Config Config::load(const std::string& path) {
 
     std::ifstream file(path);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open config file: " + path);
+        throw std::runtime_error("Не удалось открыть файл конфигурации: " + path);
     }
 
     try {
@@ -19,6 +19,7 @@ Config Config::load(const std::string& path) {
 
         if (j.contains("uid")) cfg.uid = j["uid"].get<std::string>();
         if (j.contains("server_url")) cfg.server_url = j["server_url"].get<std::string>();
+        if (j.contains("access_code")) cfg.access_code = j["access_code"].get<std::string>();
         if (j.contains("tasks_folder")) cfg.tasks_folder = j["tasks_folder"].get<std::string>();
         if (j.contains("results_folder")) cfg.results_folder = j["results_folder"].get<std::string>();
         if (j.contains("log_file")) cfg.log_file = j["log_file"].get<std::string>();
@@ -29,11 +30,11 @@ Config Config::load(const std::string& path) {
         if (j.contains("retry_delay")) cfg.retry_delay = std::chrono::seconds(j["retry_delay"]);
 
     } catch (const json::exception& e) {
-        throw std::runtime_error("JSON parse error: " + std::string(e.what()));
+        throw std::runtime_error("Ошибка парсинга JSON: " + std::string(e.what()));
     }
 
     if (!cfg.validate()) {
-        throw std::runtime_error("Config validation failed");
+        throw std::runtime_error("Проверка конфигурации не пройдена");
     }
 
     return cfg;
@@ -41,6 +42,7 @@ Config Config::load(const std::string& path) {
 
 void Config::setDefaults() {
     uid = "agent-" + std::to_string(std::time(nullptr));
+    access_code.clear();
     tasks_folder = std::filesystem::current_path() / "tasks";
     results_folder = std::filesystem::current_path() / "results";
     log_file = std::filesystem::current_path() / "agent.log";

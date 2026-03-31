@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB-AGENT - Диаграмма классов</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 36px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .header p {
+            color: rgba(255,255,255,0.8);
+        }
+        .diagram-card {
+            background: #1e1e3a;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 30px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .diagram-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            border-left: 5px solid #6c5ce7;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .diagram-description {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 25px;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+        .mermaid {
+            background: #2a2a4a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 600px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        button {
+            background: rgba(108,92,231,0.3);
+            border: 2px solid #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #6c5ce7;
+            transform: scale(1.02);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            button { display: none; }
+            .diagram-card { background: white; }
+            .diagram-title { color: #333; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 UML Диаграмма классов</h1>
+            <p>WEB-AGENT | Структура и связи компонентов</p>
+        </div>
+        
+        <div class="diagram-card">
+            <div class="diagram-title">Диаграмма классов агента</div>
+            <div class="diagram-description">
+                <strong>📌 Основные классы:</strong> WebAgent (главный контроллер), Config (конфигурация),
+                HttpClient (HTTP/CPR клиент), TaskExecutor (выполнение задач), Task (структура задачи),
+                ExecutionResult (результат выполнения), Logger (логирование spdlog), FileData (файлы).
+            </div>
+            <div class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': {
+    'background': '#2a2a4a',
+    'primaryColor': '#6c5ce7',
+    'primaryBorderColor': '#a29bfe',
+    'primaryTextColor': '#ffffff',
+    'lineColor': '#a29bfe',
+    'secondaryColor': '#3a3a6a',
+    'tertiaryColor': '#2a2a4a',
+    'fontSize': '14px',
+    'fontFamily': 'monospace'
+}}}%%
+classDiagram
+    class WebAgent {
+        +start() void
+        +stop() void
+        +isRunning() bool
+        -workerLoop() void
+        -registerAgent() bool
+        -fetchTask() Task
+        -sendResult() bool
+        -handleNetworkError() void
+    }
+
+    class Config {
+        +uid string
+        +server_url string
+        +access_code string
+        +poll_interval seconds
+        +timeout seconds
+        +load() Config
+        +validate() bool
+        +setDefaults() void
+    }
+
+    class HttpClient {
+        +get() HttpResponse
+        +post() HttpResponse
+        +postFiles() HttpResponse
+        +setTimeout() void
+        +setVerifySsl() void
+        -getSslOptions() SslOptions
+    }
+
+    class HttpResponse {
+        +success bool
+        +status_code int
+        +body string
+        +error string
+    }
+
+    class FileData {
+        +key string
+        +filepath string
+    }
+
+    class TaskExecutor {
+        +executeWithConfig() ExecutionResult
+        +changeConfig() ExecutionResult
+        +changeTimeout() ExecutionResult
+        -executeCommand() ExecutionResult
+        -runProgram() ExecutionResult
+        -transferFiles() ExecutionResult
+        -findNewFiles() vector
+    }
+
+    class Task {
+        +type TaskType
+        +task_code string
+        +task_id string
+        +session_id string
+        +command string
+        +options string
+        +source_files vector
+        +timeout seconds
+        +isValid() bool
+        +fromJson() Task
+    }
+
+    class TaskType {
+        &lt;&lt;enumeration&gt;&gt;
+        None
+        ExecuteCommand
+        RunProgram
+        TransferFile
+        ChangeConfig
+        ChangeTimeout
+    }
+
+    class ExecutionResult {
+        +success bool
+        +exit_code int
+        +error_message string
+        +output_files vector
+    }
+
+    class Logger {
+        +logTask() void
+        +logError() void
+        +logInfo() void
+        +logWarning() void
+        -write() void
+        -getTimestamp() string
+    }
+
+    WebAgent --> Config : contains
+    WebAgent --> HttpClient : contains
+    WebAgent --> Logger : contains
+    WebAgent --> TaskExecutor : uses
+    WebAgent --> Task : manages
+
+    HttpClient --> HttpResponse : returns
+    HttpClient --> FileData : uses
+
+    TaskExecutor --> Config : updates
+    TaskExecutor --> ExecutionResult : returns
+    TaskExecutor --> Task : executes
+
+    Task --> TaskType : has
+    Task --> ExecutionResult : produces
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>WEB-AGENT | UML Class Diagram | C++17 | WebAgent/Config/HttpClient/TaskExecutor/Logger</p>
+            <button onclick="window.print()">📄 Сохранить как PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                background: '#2a2a4a',
+                primaryColor: '#6c5ce7',
+                primaryBorderColor: '#a29bfe',
+                primaryTextColor: '#ffffff',
+                lineColor: '#a29bfe',
+                secondaryColor: '#3a3a6a',
+                tertiaryColor: '#2a2a4a',
+                fontSize: '14px',
+                fontFamily: 'monospace'
+            },
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
 struct Config {
     std::string uid;
     std::string server_url;
+    std::string access_code;
     std::filesystem::path tasks_folder;
     std::filesystem::path results_folder;
     std::filesystem::path log_file;
