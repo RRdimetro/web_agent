@@ -1,0 +1,19 @@
+# Build directory
+build/
+cmake-build-*/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies (FetchContent)
+_deps/
+
+# Testing
+Testing/
+TestResults/
