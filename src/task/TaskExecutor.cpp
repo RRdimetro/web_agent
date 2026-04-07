@@ -143,31 +143,36 @@ ExecutionResult TaskExecutor::changeConfig(const Task& task) {
             return {false, -1, "Config недоступен", {}};
         }
 
-        if (key == "poll_interval_sec") {
+        if (key == "poll_interval" || key == "poll_interval_sec") {
             int new_value = std::stoi(value);
             config_->poll_interval = std::chrono::seconds(new_value);
-            spdlog::info("poll_interval_sec изменён на {}", new_value);
-            return {true, 0, "poll_interval_sec = " + std::to_string(new_value), {}};
-        } else if (key == "task_timeout") {
+            config_->save(config_->config_path);
+            spdlog::info("{} изменён на {}", key, new_value);
+            return {true, 0, key + " = " + std::to_string(new_value), {}};
+        } else if (key == "timeout" || key == "task_timeout") {
             int new_value = std::stoi(value);
             config_->timeout = std::chrono::seconds(new_value);
-            spdlog::info("task_timeout изменён на {}", new_value);
-            return {true, 0, "task_timeout = " + std::to_string(new_value), {}};
-        } else if (key == "max_poll_interval") {
+            config_->save(config_->config_path);
+            spdlog::info("{} изменён на {}", key, new_value);
+            return {true, 0, key + " = " + std::to_string(new_value), {}};
+        } else if (key == "max_poll_interval" || key == "max_poll_interval_sec") {
             int new_value = std::stoi(value);
             config_->max_poll_interval = std::chrono::seconds(new_value);
-            spdlog::info("max_poll_interval изменён на {}", new_value);
-            return {true, 0, "max_poll_interval = " + std::to_string(new_value), {}};
-        } else if (key == "max_retries") {
+            config_->save(config_->config_path);
+            spdlog::info("{} изменён на {}", key, new_value);
+            return {true, 0, key + " = " + std::to_string(new_value), {}};
+        } else if (key == "max_retries" || key == "max_retries_count") {
             int new_value = std::stoi(value);
             config_->max_retries = new_value;
-            spdlog::info("max_retries изменён на {}", new_value);
-            return {true, 0, "max_retries = " + std::to_string(new_value), {}};
-        } else if (key == "retry_delay") {
+            config_->save(config_->config_path);
+            spdlog::info("{} изменён на {}", key, new_value);
+            return {true, 0, key + " = " + std::to_string(new_value), {}};
+        } else if (key == "retry_delay" || key == "retry_delay_sec") {
             int new_value = std::stoi(value);
             config_->retry_delay = std::chrono::seconds(new_value);
-            spdlog::info("retry_delay изменён на {}", new_value);
-            return {true, 0, "retry_delay = " + std::to_string(new_value), {}};
+            config_->save(config_->config_path);
+            spdlog::info("{} изменён на {}", key, new_value);
+            return {true, 0, key + " = " + std::to_string(new_value), {}};
         } else {
             return {false, -1, "Неизвестный ключ конфигурации: " + key, {}};
         }
@@ -193,6 +198,7 @@ ExecutionResult TaskExecutor::changeTimeout(const Task& task) {
             if (key == "poll_interval_sec" && config_) {
                 int new_interval = std::stoi(value);
                 config_->poll_interval = std::chrono::seconds(new_interval);
+                config_->save(config_->config_path);
                 spdlog::info("Poll interval изменён на {} секунд", new_interval);
                 return {true, 0, "Poll interval изменён на " + std::to_string(new_interval) + " секунд", {}};
             } else {
@@ -203,6 +209,7 @@ ExecutionResult TaskExecutor::changeTimeout(const Task& task) {
             int new_interval = std::stoi(timeout_json["interval"].get<std::string>());
             if (config_) {
                 config_->poll_interval = std::chrono::seconds(new_interval);
+                config_->save(config_->config_path);
                 spdlog::info("Poll interval изменён на {} секунд", new_interval);
                 return {true, 0, "Poll interval изменён на " + std::to_string(new_interval) + " секунд", {}};
             } else {

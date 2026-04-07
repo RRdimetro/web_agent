@@ -6,6 +6,7 @@ using json = nlohmann::json;
 
 Config Config::load(const std::string& path) {
     Config cfg;
+    cfg.config_path = path;
     cfg.setDefaults();
 
     std::ifstream file(path);
@@ -38,6 +39,27 @@ Config Config::load(const std::string& path) {
     }
 
     return cfg;
+}
+
+void Config::save(const std::string& path) const {
+    json j;
+    j["uid"] = uid;
+    j["server_url"] = server_url;
+    j["access_code"] = access_code;
+    j["tasks_folder"] = tasks_folder.string();
+    j["results_folder"] = results_folder.string();
+    j["log_file"] = log_file.string();
+    j["poll_interval"] = poll_interval.count();
+    j["max_poll_interval"] = max_poll_interval.count();
+    j["timeout"] = timeout.count();
+    j["max_retries"] = max_retries;
+    j["retry_delay"] = retry_delay.count();
+
+    std::ofstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Не удалось открыть файл для записи: " + path);
+    }
+    file << j.dump(4);
 }
 
 void Config::setDefaults() {

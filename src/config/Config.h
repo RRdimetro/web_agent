@@ -15,8 +15,10 @@ struct Config {
     std::chrono::seconds timeout{30};
     int max_retries{3};
     std::chrono::seconds retry_delay{5};
+    std::string config_path;
 
     static Config load(const std::string& path);
+    void save(const std::string& path) const;
     bool validate() const;
     void setDefaults();
 };
