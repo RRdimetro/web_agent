@@ -405,3 +405,53 @@ web_agent/
 ## 16. Лицензия
 
 Проект создан в учебных целях (МГТУ им. Баумана, курс 1, семестр 2).
+
+---
+
+## 17. Контекстная диаграмма
+
+Ниже показан контекст работы системы на основе текущей реализации проекта: агент запускается локально, получает задания от серверного API, выполняет их в операционной системе и отправляет результаты обратно на сервер.
+
+```mermaid
+flowchart LR
+    user["Пользователь / Оператор"]
+    panel["Web UI / Панель управления"]
+    server["Web Server API\nwa_reg / wa_task / wa_result"]
+
+    subgraph agent["Web Agent на локальной машине"]
+        direction TB
+        main["main.cpp"]
+        wa["WebAgent"]
+        cfg["Config"]
+        http["HttpClient"]
+        exec["TaskExecutor"]
+        log["agent.log"]
+        res["results/"]
+    end
+
+    fs["Локальная файловая система"]
+    shell["ОС / Shell / команды"]
+
+    user <--> panel
+    panel <--> server
+    main --> wa
+    wa --> cfg
+    wa --> http
+    wa --> exec
+    wa --> log
+    exec --> res
+    exec --> fs
+    exec --> shell
+    http <--> server
+
+    server -- "регистрация агента\nвыдача access_code" --> http
+    server -- "выдача задания" --> http
+    http -- "результат выполнения\nи файлы" --> server
+```
+
+Что показывает диаграмма:
+- пользователь работает через `Web UI`
+- сервер через API регистрирует агент и выдаёт ему задания
+- локальный `Web Agent` использует `Config`, `HttpClient` и `TaskExecutor`
+- `TaskExecutor` выполняет команды в ОС и работает с локальными файлами
+- результаты выполнения, статусы и файлы возвращаются обратно на сервер через `wa_result`
