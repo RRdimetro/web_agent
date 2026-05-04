@@ -12,6 +12,7 @@ find_package(Threads REQUIRED)
 
 include(FetchContent)
 
+# CPR - HTTP клиент
 FetchContent_Declare(
     cpr
     GIT_REPOSITORY https://github.com/libcpr/cpr.git
@@ -19,13 +20,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cpr)
 
+# nlohmann/json - JSON парсинг (обновлен до версии с фиксом CMake 4.0)
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2
+    GIT_TAG v3.11.3
 )
 FetchContent_MakeAvailable(json)
 
+# spdlog - логирование
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -65,6 +68,10 @@ target_link_libraries(web-agent-lib
 # Исполняемый файл агента
 add_executable(web-agent src/main.cpp)
 target_link_libraries(web-agent web-agent-lib)
+
+# Установка (для пакетирования)
+install(TARGETS web-agent DESTINATION bin)
+install(FILES config/agent_config.json DESTINATION etc/web-agent OPTIONAL)
 
 if(BUILD_TESTS)
     enable_testing()
