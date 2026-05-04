@@ -1,0 +1,146 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Версия релиза (например: 1.0.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: web-agent-linux-x64
+            ext: ""
+            install_cmd: |
+              sudo apt-get update
+              sudo apt-get install -y cmake g++ libcurl4-openssl-dev libssl-dev
+            cmake_args: "-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+
+          - os: windows-2022
+            artifact: web-agent-windows-x64
+            ext: ".exe"
+            install_cmd: |
+              echo "Windows dependencies will be handled by CMake FetchContent"
+            cmake_args: '-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -G "Visual Studio 17 2022" -A x64'
+
+          - os: macos-14
+            artifact: web-agent-macos-x64
+            ext: ""
+            install_cmd: |
+              brew install cmake openssl curl
+            cmake_args: '-DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl -DOPENSSL_LIBRARIES=/usr/local/opt/openssl/lib'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # === Фиксируем версию CMake 3.28 (надежнее чем системная 4.0+) ===
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.28.6'
+
+      # === Установка системных зависимостей ===
+      - name: Install dependencies
+        shell: bash
+        run: ${{ matrix.install_cmd }}
+
+      # === Кэширование FetchContent ===
+      - name: Cache FetchContent
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/build/_deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-fetchcontent-
+
+      # === Конфигурация ===
+      - name: Configure
+        shell: bash
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. ${{ matrix.cmake_args }}
+
+      # === Сборка ===
+      - name: Build
+        shell: bash
+        run: |
+          cd build
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cmake --build . --config Release --parallel
+          else
+            cmake --build . --parallel $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)
+          fi
+
+      # === Проверка бинарника ===
+      - name: Verify binary
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            ls -la build/Release/web-agent${{ matrix.ext }} || ls -la build/web-agent${{ matrix.ext }}
+          else
+            ls -la build/web-agent${{ matrix.ext }}
+            file build/web-agent${{ matrix.ext }}
+          fi
+
+      # === Упаковка ===
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+
+          # Копируем бинарник
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cp build/Release/web-agent${{ matrix.ext }} dist/ 2>/dev/null || cp build/web-agent${{ matrix.ext }} dist/
+          else
+            cp build/web-agent${{ matrix.ext }} dist/
+          fi
+
+          # Копируем конфиг
+          if [ -f config/agent_config.json ]; then
+            cp config/agent_config.json dist/
+          fi
+
+          # Копируем документацию
+          [ -f README.md ] && cp README.md dist/
+          [ -f LICENSE ] && cp LICENSE dist/
+
+          # Создаем архив
+          cd dist
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            7z a ../${{ matrix.artifact }}.zip *
+          else
+            zip -r ../${{ matrix.artifact }}.zip *
+          fi
+          cd ..
+          ls -la ${{ matrix.artifact }}.zip
+
+      # === Загрузка артефакта ===
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.zip
+
+      # === Создание Release ===
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ matrix.artifact }}.zip
+          generate_release_notes: true
