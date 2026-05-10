@@ -53,13 +53,29 @@ ExecutionResult TaskExecutor::execute(const Task& task, const std::filesystem::p
 ExecutionResult TaskExecutor::executeCommand(const Task& task, const std::filesystem::path& results_folder) {
     spdlog::info("Выполнение команды: {}", task.command);
 
-    int exit_code = std::system(task.command.c_str());
+    // Создаём папку result если её нет
+    std::filesystem::create_directories(results_folder);
+
+    // Уникальное имя файла вывода: result/<session_id>_output.txt
+    std::string filename = task.session_id.empty()
+        ? "output_" + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) + ".txt"
+        : task.session_id + "_output.txt";
+    std::filesystem::path out_file = results_folder / filename;
+
+    // Перенаправляем stdout и stderr в файл в папке result
+    std::string cmd = task.command + " > \"" + out_file.string() + "\" 2>&1";
+
+    int exit_code = std::system(cmd.c_str());
     bool success = (exit_code == 0);
     std::string error = success ? "" : "Команда завершилась с кодом: " + std::to_string(exit_code);
 
-    auto new_files = findNewFiles(results_folder, std::chrono::system_clock::now() - task.timeout);
+    std::vector<std::filesystem::path> output_files;
+    if (std::filesystem::exists(out_file) && std::filesystem::file_size(out_file) > 0) {
+        output_files.push_back(out_file);
+        spdlog::info("Вывод команды сохранён: {}", out_file.string());
+    }
 
-    return {success, exit_code, error, new_files};
+    return {success, exit_code, error, output_files};
 }
 
 ExecutionResult TaskExecutor::runProgram(const Task& task, const std::filesystem::path& results_folder) {

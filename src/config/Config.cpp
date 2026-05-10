@@ -66,7 +66,7 @@ void Config::setDefaults() {
     uid = "agent-" + std::to_string(std::time(nullptr));
     access_code.clear();
     tasks_folder = std::filesystem::current_path() / "tasks";
-    results_folder = std::filesystem::current_path() / "results";
+    results_folder = std::filesystem::current_path() / "result";
     log_file = std::filesystem::current_path() / "agent.log";
 }
 
