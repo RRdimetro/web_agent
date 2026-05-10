@@ -135,32 +135,36 @@ ExecutionResult TaskExecutor::runProgram(const Task& task, const std::filesystem
 }
 
 ExecutionResult TaskExecutor::transferFiles(const Task& task, const std::filesystem::path& results_folder) {
-    spdlog::info("Передача {} файлов в {}", task.source_files.size(), task.destination_folder);
+    spdlog::info("Отправка {} файлов", task.source_files.size());
 
-    std::filesystem::create_directories(task.destination_folder);
-    std::vector<std::filesystem::path> transferred;
+    std::vector<std::filesystem::path> to_send;
 
     for (const auto& source : task.source_files) {
         std::filesystem::path src(source);
-        std::filesystem::path dest = task.destination_folder / src.filename();
 
-        try {
-            std::filesystem::copy(src, dest, std::filesystem::copy_options::overwrite_existing);
-            transferred.push_back(dest);
-            spdlog::info("Скопирован {} в {}", source, dest.string());
-        } catch (const std::filesystem::filesystem_error& e) {
-            spdlog::error("Не удалось скопировать {}: {}", source, e.what());
-            return {false, -1, e.what(), {}};
+        if (!std::filesystem::exists(src)) {
+            std::string err = "Файл не найден: " + src.string();
+            spdlog::error("{}", err);
+            return {false, -1, err, {}};
+        }
+
+        to_send.push_back(src);
+        spdlog::info("Файл готов к отправке: {}", src.string());
+    }
+
+    // Формируем читаемое сообщение
+    std::string msg;
+    if (to_send.size() == 1) {
+        msg = "Файл передан: " + to_send[0].filename().string()
+            + " (" + std::to_string(std::filesystem::file_size(to_send[0])) + " байт)";
+    } else {
+        msg = "Передано файлов: " + std::to_string(to_send.size());
+        for (const auto& f : to_send) {
+            msg += " | " + f.filename().string();
         }
     }
 
-    // Формируем сообщение со списком скопированных файлов
-    std::string msg = "Передано файлов: " + std::to_string(transferred.size());
-    for (const auto& f : transferred) {
-        msg += " | " + f.filename().string();
-    }
-
-    return {true, 0, msg, transferred};
+    return {true, 0, msg, to_send};
 }
 
 ExecutionResult TaskExecutor::changeConfig(const Task& task) {

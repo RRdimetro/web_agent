@@ -199,13 +199,11 @@ std::optional<Task> WebAgent::fetchTask() {
                 try {
                     auto file_json = json::parse(options);
                     std::string filename = file_json.value("filename", "");
-                    task.source_files = {filename};
-                    task.destination_folder = config_.results_folder;
-                    task.command = ""; // Не выполняем как команду
+                    // Берём файл из папки result, а не из рабочей директории
+                    task.source_files = {(config_.results_folder / filename).string()};
                 } catch (...) {
-                    // Если не JSON, используем как есть
-                    task.source_files = {options};
-                    task.destination_folder = config_.results_folder;
+                    // Если не JSON, ищем файл с таким именем в result
+                    task.source_files = {(config_.results_folder / options).string()};
                 }
             } else if (task_code == "CONF") {
                 // CONF: изменить конфигурацию
