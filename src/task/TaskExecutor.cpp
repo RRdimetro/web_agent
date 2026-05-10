@@ -75,7 +75,20 @@ ExecutionResult TaskExecutor::executeCommand(const Task& task, const std::filesy
         spdlog::info("Вывод команды сохранён: {}", out_file.string());
     }
 
-    return {success, exit_code, error, output_files};
+    // Читаем содержимое файла вывода и кладём его в message
+    std::string message;
+    if (!output_files.empty()) {
+        std::ifstream ifs(output_files[0]);
+        if (ifs) {
+            message.assign(std::istreambuf_iterator<char>(ifs),
+                           std::istreambuf_iterator<char>());
+        }
+    }
+    if (message.empty()) {
+        message = success ? "OK" : error;
+    }
+
+    return {success, exit_code, message, output_files};
 }
 
 ExecutionResult TaskExecutor::runProgram(const Task& task, const std::filesystem::path& results_folder) {
@@ -141,7 +154,13 @@ ExecutionResult TaskExecutor::transferFiles(const Task& task, const std::filesys
         }
     }
 
-    return {true, 0, "", transferred};
+    // Формируем сообщение со списком скопированных файлов
+    std::string msg = "Передано файлов: " + std::to_string(transferred.size());
+    for (const auto& f : transferred) {
+        msg += " | " + f.filename().string();
+    }
+
+    return {true, 0, msg, transferred};
 }
 
 ExecutionResult TaskExecutor::changeConfig(const Task& task) {
