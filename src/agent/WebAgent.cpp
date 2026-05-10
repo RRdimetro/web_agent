@@ -110,16 +110,27 @@ bool WebAgent::registerAgent() {
 
     try {
         auto response_json = json::parse(response.body);
-        int code = response_json.value("code_response", -1);
-        
-        if (code == 0) {
+
+        // Сервер возвращает поле "code_responce" (с опечаткой), поддерживаем оба варианта.
+        // Значение может быть строкой ("0") или числом.
+        int code = -1;
+        for (const auto& key : {"code_responce", "code_response"}) {
+            if (response_json.contains(key)) {
+                auto& val = response_json[key];
+                if (val.is_string()) code = std::stoi(val.get<std::string>());
+                else                 code = val.get<int>();
+                break;
+            }
+        }
+
+        if (code == 0 || code == -3) {  // -3 = уже зарегистрирован
             session_id_ = response_json.value("access_code", "");
             if (!session_id_.empty()) {
                 spdlog::info("Регистрация успешна, access_code: {}", session_id_);
                 return true;
             }
         }
-        
+
         std::string msg = response_json.value("msg", "unknown error");
         spdlog::error("Ошибка регистрации: {} (code {})", msg, code);
         return false;

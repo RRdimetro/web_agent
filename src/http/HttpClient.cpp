@@ -72,40 +72,18 @@ HttpResponse HttpClient::postFiles(const std::string& url, const std::vector<cpr
         session.SetTimeout(timeout_);
         session.SetOption(getSslOptions());
 
-        std::vector<cpr::Part> parts_vec;
+        // Строим multipart напрямую, не через промежуточный vector<Part>,
+        // иначе cpr::File теряется и файлы отправляются как пустые строки.
+        cpr::Multipart multipart{};
 
         for (const auto& field : fields) {
-            parts_vec.emplace_back(field.key, field.value);
+            multipart.parts.push_back({field.key, field.value});
         }
         for (const auto& file : files) {
-            parts_vec.emplace_back(file.key, cpr::File{file.filepath});
+            multipart.parts.push_back({file.key, cpr::File{file.filepath}});
         }
 
-        if (parts_vec.size() == 1) {
-            session.SetOption(cpr::Multipart{{parts_vec[0].name, parts_vec[0].value, parts_vec[0].content_type}});
-        } else if (parts_vec.size() == 2) {
-            session.SetOption(cpr::Multipart{
-                {parts_vec[0].name, parts_vec[0].value, parts_vec[0].content_type},
-                {parts_vec[1].name, parts_vec[1].value, parts_vec[1].content_type}
-            });
-        } else if (parts_vec.size() == 3) {
-            session.SetOption(cpr::Multipart{
-                {parts_vec[0].name, parts_vec[0].value, parts_vec[0].content_type},
-                {parts_vec[1].name, parts_vec[1].value, parts_vec[1].content_type},
-                {parts_vec[2].name, parts_vec[2].value, parts_vec[2].content_type}
-            });
-        } else if (parts_vec.size() == 4) {
-            session.SetOption(cpr::Multipart{
-                {parts_vec[0].name, parts_vec[0].value, parts_vec[0].content_type},
-                {parts_vec[1].name, parts_vec[1].value, parts_vec[1].content_type},
-                {parts_vec[2].name, parts_vec[2].value, parts_vec[2].content_type},
-                {parts_vec[3].name, parts_vec[3].value, parts_vec[3].content_type}
-            });
-        } else {
-            if (!parts_vec.empty()) {
-                session.SetOption(cpr::Multipart{{parts_vec[0].name, parts_vec[0].value, parts_vec[0].content_type}});
-            }
-        }
+        session.SetMultipart(multipart);
 
         auto response = session.Post();
 
